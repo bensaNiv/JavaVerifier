@@ -1,6 +1,3 @@
-oresnir
-niv.bensalmon
-
 =============================
 =      File description     =
 =============================
@@ -252,7 +249,7 @@ was received with the pattern that was already compiled according to the method 
 We did the same thing in our project when checking is assignment for a variable is legal.
 By doing these small changes we would allow our compiler to check and work with different types of methods.
 
-We really enjoyed this Project!
+
 
 
 
