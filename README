@@ -1,0 +1,280 @@
+oresnir
+niv.bensalmon
+
+=============================
+=      File description     =
+=============================
+
+// package main //
+* Sjavac.java- This class represents the main class of the program. it prints 0 if the code is legal,
+1 if the code is illegal and 2 in case of IO errors.
+* Scanner.java- This class represents the scanner class. It scans the given file and checks if the lines are
+valid.
+* LineProcessing.java- This class represents line processing. it process any line that ends with ";".
+* BlockProcessing.java- This class represents block processing. it process method block and if/while blocks.
+* GlobalMaps.java- This class is responsible for the variables and methods of the program. it contains two
+hashMaps, one for the variables- separated to levels, and one for the methods.
+* SyntaxException.java- This class is throwing Syntax Exception if there was a syntax error in the program -
+its the only Exception class in the program
+
+// package methods //
+* Method.java- This class represents a Method in the code. each methode has a name,
+list of args and list of lines.
+* MethodFactory.java- This class represents the method factory. it creates new Method objects.
+* MethodCall.java- This class checks if a method call is valid.
+* MethodParser.java- This class parse the Method declaration line and check for validation.
+
+// package variables //
+* Variable.java- This class represents a Variable object in the code.
+It can be of type int, double, String, boolean, char, Each variable has a name, type, value and
+isFinal boolean.
+* VariableFactory.java- This class represents the variable factory. it creates new Variable objects.
+* VariableParser.java- This class parse a variable line
+
+// package regex //
+* RegularExpression- This class collects the main regular expressions used in this program.
+* DeclarationRegex- This class parse the declaration regex expressions of parameters used in this program.
+* MethodRegex- This class parse the method expressions used in this program - call for method and declaration
+of a method.
+* TermRegex- This class parse the term expressions used in this program.
+* AssignmentRegex - This class parse the assignment expressions in this project.
+
+------------------------------
+README - a text that documents the design and structure of the project.
+
+=============================
+=          Design           =
+=============================
+Representation of the classes and their relationships-
+We chose to divide our program to 4 packages- main, regex, variables and methods. the main package contains
+the rest. In that way, our code is readable and each package contains relative classes.
+We had consider our design with many thoughts, we wanted to make our program the most efficient as we can,
+and we had to think how to do it with all the nest possibilities of sJavac options.
+We realized that we can use the exception mechanism to make our program more efficient - so we decided to make
+a exception class - SyntaxException ( more on how we handled the exceptions in javaS in the answer section)
+The main class- Sjavac catch this errors and print 1 and the error message, this class also catch the IoError
+and print 2 and Io error message.
+The first design instruction that we wanted to do is to minimize the lines that need Re-read in the file
+so we build our scanner Class - the main class that read the file and parse it according to this guidance.
+Our thought was that if the file is long, re-reading line will be very wasteful in Running Time aspect,
+so we tried to narrow the lined that need to re read.
+The scanner go over every line and dividing it to cases according to the suffix allowed in the sJavac -
+it will parse every line - if the line has a suffix of ; so the scanner will sent it to LineProcessing
+abstract class that will parse the line - and by that no need to re-read the line.
+if the line is finish with '{' so this line is suspected to be a method declaration - the Scanner check if the
+line is a method declaration (With the singleton class of MethodRegex - that will be later explained) -
+its not method declaration so its not valid - error wil be thrown and if it is a method declaration we start
+adding the method lines to an LinkedList when it finish we create a method object with the method declaration
+and a block of the lines that was added to the linked list.
+Another very important intention of this design was to first initialize all of the "Global" variables and
+all of the method so all of the rest of the program will recognize them.
+After finishing creating all of the method classes, and going over all of the lines inside of them with
+ Block Processing we can Declare that we finished Compiling all of the Code and Print 0.
+
+Our next thought of how to design our program was how to handle the scope differences and the
+differences between local and global variables - we decided to use the level mechanism.
+The class that helped us to implement the level mechanism is the GlobalMaps class
+The idea of the level design was that every level will know all the level below her - so by that the hierarchy
+of the variables will remain in control.
+Because Scanner is parsing a line by its ending - the other parsing classes - LineProcessing and
+MethodProcessing is using Scanner also - so all of the main parse class are in the same level and this is
+why there all in the main package.
+
+The regex package design:
+After learning the subject in the course we realized that the regular expression mechanism can become
+really handy in this Project - So we created the regex package that contain all of the regex action
+the Main regex contain moat of the regular expression and the Pattern for this expressions.
+besides the main Regex class we created a regex class for 4 common expression:
+1. Method declaration and method call
+2. Value Declaration
+3. Value Assignment
+4. Term Line
+BY designing our Regex package in this way we could have check for a lot of common expression if they match
+the Sjavac Syntax terms.
+
+The value and method package are package that contain the object class,in terms of intuitiveness and
+understandability, We tried to follow the minimal API principle and therefore we created Factory classes
+for creating methods and variables.
+besides that we realized that we need class that will parse the line in the file that are using every object
+so in every package we also create "parsers".
+Besides these two main packages, we avoided adding major code models outside because we tried to create our
+program easy to understand and read.
+The logic behind the variable and method design was that in each time we are asking to create a
+variable or method in the code we can reflect the ask with an object that will keep the necessary information
+on our object.
+With all mentioned above, We kept on following the minimal API principal and modularity functionality.
+also, we used multiple design patterns and created constants to keep our code flexible for changes.
+
+
+=============================
+=  Implementation details   =
+=============================
+Processing lines- we decided to separate our processing line method to two method-
+1. method that process lines in level 0 (explanation below)- creates global variables and methods
+2. method that process blocks- process the lines inside each method- create local variables according
+to the levels
+
+Levels- we decided to deal with the depth of the blocks using levels. the idea is that every time we are
+entering a block, level increase by 1.
+every time we are exiting block, level decrease by 1 and all the variables in the same
+level are deleted from the variablesHashMap in GlobalMaps. at the beginning point- level = 0.
+The GlobalMaps Class Implementation was intended to make this design doable:
+We realized that we needed an Object that will control all of the variables and method hierarchy -
+so we implemented the Global Maps Object that has 2 main HashMaps:
+variableHashMap - a hashMap that contains all the variables in the program.
+The hash map keys are the variable levels the global variables are level 0 and every scope open so "level up",
+the values of the hash map is another hash map for every level -
+where the keys are the variable name and values are the variable object. The advantages of the
+the Java Hash-Map come in handy here because for every level you cant hold the 2 variables with he same name
+and the hash map don't allow two values with the same key.
+Because that the keys are integer it made it easy to check for variable in the direction of local to global.
+In any other aspect the Java HashMap came in handy in our design.
+In the globalMaps Class there are also public method that allow to search for method, search for values,
+check value level and other method to make our implementation more efficient.
+we wanted to access the GlobalMaps from every place in the program so we kept this class and the method in
+it public.
+
+Two special abstract Classes which helped us with the Processing of a file :
+we made this classes abstract because we never create a instance of them.
+BlockProcessing-
+there's two types of blocks-
+method block- can appear only in level 0
+if/while block- can appear only in level > 0
+the class checks if the lines inside the method are valid. it uses Scanner and LinePrecessing class.
+with using regex and the global maps it can decide weather or not the line is legal
+LineProcessing-
+This class represents line processing. there's four valid options for a line that ends with ; -
+ * return statement (inside a method)
+ * calling a method with/without arguments
+ * initialize variables
+ * declaration variables
+This class process the lines its also using the other classes in her package to control and receive
+information about the Variables and method in the Program.
+Our design of several main class that process the file is come in handy by implementing this two class:
+using the other classes in the package we didn't minimize repeat of code and made good synchronized between
+the classes.
+
+Like mentioned in the Design section we have created the regex package that
+has a the MainRegex a Util Class for the classes in the Scope package after realizing we are using some
+regexes in a few places with small to none changes.
+In addition to because of the Pattern. The compile method
+is an Expensive (memory and runTime) method, we tried to Compile the regexes in this util class once, and use
+a compiled pattern and not a regex where we could, and by that making our code generic and using Trim only
+once where it has must appear.
+Moreover, we have implemented 4 classes: MethodRegex, TermRegex, AssignmentRegex and DeclarationRegex.
+All 4 classes has the same purpose: compile the related pattern once, and return the relevant parameters that
+were extracted from the match by using the matcher group.
+The implementation of the 4 specific Regex class is singleton - we realized that this class need to be created
+just once and using the same instance all the time.
+We where putting all of the above classes in the same package called Regexes in order the code to be more
+organized.
+
+Factories –
+We followed the Factory Design pattern to create a Variable and in a centralized Place and made it as easy as
+we could For other Classes in the Project.
+In addition, we created a Method Factory, which is in charge of creating the methods in our program.
+
+Extensibility - We created constants for each class in order to make our program flexible for changes.
+The use of Variable factory allows to add new variable types and add functionality or features in the future.
+
+During the Project we used many types of Java build in Containers - when using  build in methods like (split)
+we have used the Java Array because it was easy and comfortable. In Some cases we used ArrayList -
+to access parameter easily , but most of the time we used java Linked List - we understood that we have a
+lot of data to contain all the time and Linked List is a Container that allow fast access for the parameters
+in Running time aspect and overall easy access so most of the time we used this container.
+
+=============================
+=    Answers to questions   =
+=============================
+s-Java code Error handling –
+Like Mentioned in the design section - we wanted to use the Java exception in order to a-Java error handling -
+We decided the instead of doing boolean methods we can use exceptions.
+First, we are throwing an IOException in case we are facing errors Loading the File from the Path file we
+received from the user as an argument.
+We thought of doing a Exception hierarchy and made exception package inside every other package
+but then we realized not like ex5 we have a lot of  different cases of errors and creating
+Class for every different error will create a massive load over our project. By thinking about that we decided
+to create a single exception class called SyntaxException - when creating an object of this class the
+constructor receives a message related to the problem that occurred.
+This exception will branch all the way to the Sjava class  - where she will be caught and will
+be printed according the message receives in the constructor.
+By using this branching Exception mechanism - we could have known that in every place in the project where
+there is something wrong we can throw the SyntaxError and will eventually print 1.
+if any Exception didn't occurred that means that we didn't have no problems with reading the file - print 0.
+
+Regular expression description:
+Two of the main regular expressions:
+1) In order to check if a certain line ia a return statement we realize that spaces can be anywhere
+or not to be at all so the regex expression was \s*"return"\s*;+\s* - by that we ensured that any space
+will still be recognize by the regex Expression. we compile this expression in the main expression
+class and now every time we check a block of method - it it didn't end line that matches this pattern
+it was false.
+2) In the DeclarationRegex Class We wanted to check if the line is an declaration of a variable - that was
+in the option that there will be a final declaration, so in order to handle it we did the final regex in
+brackets and added the {0,1} - the declaration can be show 1 or zero times - then in order to check if there
+was a final declaration er created the isDeclarationFinal() method - using matcher group dealing with
+the option of null matcher object.
+
+
+
+Design questions –
+
+1. How would you modify your code to add new types of variables (e.g.,float)?
+To add new types of variables to our program, we would simply add the type to into our Variable Factory Class
+in the Hash map of all the legals type
+By doing that, we would have the option to create a new variable.
+All of the rest of the program would know how to word and integrate the new type due to the fact that all
+they need is its name and the Regex for the type Value which would be available in the VariableFactory class.
+We intently designed the VariableFactory  in that way in order adding more variable
+types as Easy as Possible.
+
+2. Code expansion to support different features:
+Using Methods Of Standard Java –
+This feature can be implement in the next way:
+In the methods package we have the MethodCall Parser that check if a call for a method is legal.
+He checked at the GlobalMaps methodHashMap to check if the method exist and and if she exist he checked if she
+got the right number of argument  and if every argument is in the type that is needed.
+So all the changes we need to make is te create all of the Standard Java Methods as an Our Program Method
+and to add it to the methodHashMap - their name, number of values they need to receive and there type.
+Now, because of the MethodCall Implementation it can recognize when calling for Standard Java Method will
+be legal.
+By doing these small changes we would allow our compiler to support methods of Standard java.
+
+Different Method types –
+In order to support this feature, we would have need to change the RegexClass of MethodRegex
+that instead of just void the expression can be any thing else.
+because of our implementation and in the help of Matcher group we can easily detect the type of the method and
+a field of type to method object - by that every object have a type.
+Next we need tp change the regex expression that check the return statement again using Matcher we can easily
+know what value was returned and then using the GlobalMaps to know if the variable that is returned is exist
+in if he is exist we can easily reach his type. if hes not exist we just need to compare the parameter that
+was received with the pattern that was already compiled according to the method type.
+We did the same thing in our project when checking is assignment for a variable is legal.
+By doing these small changes we would allow our compiler to check and work with different types of methods.
+
+We really enjoyed this Project!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
